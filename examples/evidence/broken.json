@@ -1,0 +1,252 @@
+{
+  "algorithm": "sha256",
+  "digest": "60e5db413221a6ad2e81e944cf993faf952b5794e540a3460a15962c778ab8fd",
+  "payload": {
+    "context": {
+      "captured_at": "2026-08-08T12:00:00Z",
+      "contract": {
+        "active_value": "active",
+        "contract_id": "active-customers-present",
+        "key_field": "customer_id",
+        "source_urn": "urn:li:document:graphfixture-active-customers",
+        "status_field": "status",
+        "target_table": "customer_order_summary",
+        "title": "Every active customer must appear"
+      },
+      "lineage": [
+        {
+          "downstream": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.customer_order_summary,PROD)",
+          "upstream": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.customers,PROD)"
+        },
+        {
+          "downstream": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.customer_order_summary,PROD)",
+          "upstream": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.orders,PROD)"
+        },
+        {
+          "downstream": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.customer_order_summary,PROD)",
+          "upstream": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.order_items,PROD)"
+        }
+      ],
+      "source_mode": "captured",
+      "tables": [
+        {
+          "columns": [
+            {
+              "data_type": "string",
+              "name": "customer_id",
+              "nullable": false
+            },
+            {
+              "data_type": "string",
+              "name": "name",
+              "nullable": false
+            },
+            {
+              "data_type": "string",
+              "name": "status",
+              "nullable": false
+            },
+            {
+              "data_type": "date",
+              "name": "created_at",
+              "nullable": false
+            }
+          ],
+          "name": "customers",
+          "urn": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.customers,PROD)"
+        },
+        {
+          "columns": [
+            {
+              "data_type": "string",
+              "name": "order_id",
+              "nullable": false
+            },
+            {
+              "data_type": "string",
+              "name": "customer_id",
+              "nullable": false
+            },
+            {
+              "data_type": "date",
+              "name": "order_date",
+              "nullable": false
+            },
+            {
+              "data_type": "string",
+              "name": "status",
+              "nullable": false
+            }
+          ],
+          "name": "orders",
+          "urn": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.orders,PROD)"
+        },
+        {
+          "columns": [
+            {
+              "data_type": "string",
+              "name": "order_id",
+              "nullable": false
+            },
+            {
+              "data_type": "string",
+              "name": "item_id",
+              "nullable": false
+            },
+            {
+              "data_type": "integer",
+              "name": "quantity",
+              "nullable": false
+            },
+            {
+              "data_type": "decimal",
+              "name": "unit_price",
+              "nullable": false
+            }
+          ],
+          "name": "order_items",
+          "urn": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.order_items,PROD)"
+        }
+      ]
+    },
+    "execution": {
+      "columns": [
+        "customer_id",
+        "name",
+        "order_count"
+      ],
+      "rows": [
+        {
+          "customer_id": "C-001",
+          "name": "Carol",
+          "order_count": 2
+        },
+        {
+          "customer_id": "C-004",
+          "name": "Alice",
+          "order_count": 1
+        }
+      ],
+      "sql_digest": "e4d4463f0c435c7b514817b2652fb95eda9821b1928575bf61353d7aa81a0008"
+    },
+    "fixtures": {
+      "seed": 42,
+      "tables": {
+        "customers": [
+          {
+            "created_at": "2024-01-08",
+            "customer_id": "C-001",
+            "name": "Carol",
+            "status": "active"
+          },
+          {
+            "created_at": "2024-01-09",
+            "customer_id": "C-002",
+            "name": "Bob",
+            "status": "inactive"
+          },
+          {
+            "created_at": "2024-01-10",
+            "customer_id": "C-003",
+            "name": "Dan",
+            "status": "active"
+          },
+          {
+            "created_at": "2024-01-11",
+            "customer_id": "C-004",
+            "name": "Alice",
+            "status": "active"
+          }
+        ],
+        "order_items": [
+          {
+            "item_id": "I-001",
+            "order_id": "O-1001",
+            "quantity": 1,
+            "unit_price": "19.99"
+          },
+          {
+            "item_id": "I-002",
+            "order_id": "O-1001",
+            "quantity": 2,
+            "unit_price": "9.99"
+          },
+          {
+            "item_id": "I-003",
+            "order_id": "O-1002",
+            "quantity": 1,
+            "unit_price": "14.99"
+          },
+          {
+            "item_id": "I-004",
+            "order_id": "O-1003",
+            "quantity": 3,
+            "unit_price": "4.99"
+          }
+        ],
+        "orders": [
+          {
+            "customer_id": "C-001",
+            "order_date": "2024-01-17",
+            "order_id": "O-1001",
+            "status": "complete"
+          },
+          {
+            "customer_id": "C-001",
+            "order_date": "2024-01-22",
+            "order_id": "O-1002",
+            "status": "complete"
+          },
+          {
+            "customer_id": "C-004",
+            "order_date": "2024-01-18",
+            "order_id": "O-1003",
+            "status": "complete"
+          }
+        ]
+      }
+    },
+    "schema_version": "1.0",
+    "sql": "SELECT\n    c.customer_id,\n    c.name,\n    COUNT(DISTINCT o.order_id) AS order_count\nFROM customers AS c\nINNER JOIN orders AS o ON o.customer_id = c.customer_id\nLEFT JOIN order_items AS oi ON oi.order_id = o.order_id\nWHERE c.status = 'active'\nGROUP BY c.customer_id, c.name\nORDER BY c.customer_id;\n",
+    "stages": {
+      "constraints": "passed",
+      "datahub_context": "passed",
+      "datahub_writeback": "pending",
+      "duckdb": "passed",
+      "fixtures": "passed",
+      "verification": "failed"
+    },
+    "verification": {
+      "actual_ids": [
+        "C-001",
+        "C-004"
+      ],
+      "contract_id": "active-customers-present",
+      "duplicate_ids": [],
+      "expected_ids": [
+        "C-001",
+        "C-003",
+        "C-004"
+      ],
+      "missing_ids": [
+        "C-003"
+      ],
+      "passed": false,
+      "reproducer": {
+        "customers": [
+          {
+            "created_at": "2024-01-10",
+            "customer_id": "C-003",
+            "name": "Dan",
+            "status": "active"
+          }
+        ],
+        "order_items": [],
+        "orders": []
+      },
+      "source_urn": "urn:li:document:graphfixture-active-customers",
+      "title": "Every active customer must appear",
+      "unexpected_ids": []
+    }
+  }
+}

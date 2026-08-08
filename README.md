@@ -4,14 +4,44 @@ GraphFixture turns DataHub context into executable relational test data that cat
 
 The first product slice proves one contract: every active customer must appear in `customer_order_summary`, including customers with no orders. GraphFixture generates related `customers`, `orders`, and `order_items` rows, executes the transformation in isolated DuckDB, and reports the smallest fixture that reproduces a failure.
 
-## Current proof
+## See the proof
 
 ```bash
 uv sync --all-groups
-uv run pytest
+uv run graphfixture replay examples/evidence/broken.json
 ```
 
-The repository is under active hackathon development. Live DataHub context, canonical offline evidence, and the Proof Pipeline interface are tracked in the public issues.
+The replay needs no DataHub server, API key, or network. It verifies the evidence hash, rebuilds the typed fixture, reruns the saved SQL in DuckDB, and confirms the recorded failure. Exit code `1` means the replay is authentic and the saved contract failure reproduced. The broken query drops active customer `C-003` because that customer has zero orders.
+
+Compare it with the fixed transformation:
+
+```bash
+uv run graphfixture replay examples/evidence/fixed.json
+```
+
+That command exits `0` and proves the same fixture passes after changing the inner join to a left join.
+
+## Run your own proof
+
+```bash
+uv run graphfixture run \
+  --sql examples/sql/customer_order_summary_broken.sql \
+  --output evidence.json
+```
+
+The canonical JSON bundle includes the captured DataHub context, generated relational rows, SQL digest, output rows, deterministic contract result, and minimal reproducer. SHA-256 detects content changes, while offline replay checks that saved claims still match fresh execution. The bundle is not signed, so its hash is an integrity check rather than proof of who created it.
+
+## Quality gates
+
+```bash
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy src tests
+uv run pytest
+uv run python -m build
+```
+
+Live DataHub context, verified Document write-back, and the Proof Pipeline interface are tracked in the public issues.
 
 ## License
 
