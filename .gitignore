@@ -1,0 +1,34 @@
+# Private project-control documents. Keep these local and never publish them.
+AGENTS.md
+PROMPTS.md
+research-intake.md
+handoff.md
+log.md
+design.doc.md
+.thoughts/
+
+# Secrets and local configuration.
+.env
+.env.*
+!.env.example
+
+# Local dependency and build output.
+node_modules/
+.venv/
+.uv-cache/
+venv/
+dist/
+build/
+.next/
+coverage/
+.coverage
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+
+# Editor and operating-system state.
+.DS_Store
+.idea/
+.vscode/
