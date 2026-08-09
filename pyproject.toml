@@ -11,6 +11,7 @@ requires-python = ">=3.12,<3.14"
 license = "Apache-2.0"
 authors = [{ name = "Alike001" }]
 dependencies = [
+  "acryl-datahub[datahub-rest]==1.7.0",
   "duckdb>=1.2,<2",
 ]
 
@@ -28,6 +29,18 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/graphfixture"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/examples",
+  "/src",
+  "/tests",
+  "/.python-version",
+  "/LICENSE",
+  "/README.md",
+  "/pyproject.toml",
+  "/uv.lock",
+]
 
 [tool.ruff]
 target-version = "py312"

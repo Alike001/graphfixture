@@ -31,6 +31,25 @@ uv run graphfixture run \
 
 The canonical JSON bundle includes the captured DataHub context, generated relational rows, SQL digest, output rows, deterministic contract result, and minimal reproducer. SHA-256 detects content changes, while offline replay checks that saved claims still match fresh execution. The bundle is not signed, so its hash is an integrity check rather than proof of who created it.
 
+## Prove it with DataHub
+
+Start the official local DataHub stack, then seed the small fiction-retail graph used by the proof:
+
+```bash
+uv run datahub docker quickstart --version stable
+DATAHUB_GMS_URL=http://localhost:8080 uv run graphfixture datahub-seed
+```
+
+Run the broken transformation using schemas, lineage, and the contract read from DataHub:
+
+```bash
+DATAHUB_GMS_URL=http://localhost:8080 uv run graphfixture datahub-run \
+  --sql examples/sql/customer_order_summary_broken.sql \
+  --output live-evidence.json
+```
+
+GraphFixture writes a linked verification receipt back to DataHub and immediately reads it again. The command only reports `writeback_verified: true` when the stored evidence digest matches exactly. The seed and receipt IDs are stable, so rerunning either command updates the same graph entities instead of creating duplicates.
+
 ## Quality gates
 
 ```bash
@@ -38,10 +57,10 @@ uv run ruff format --check .
 uv run ruff check .
 uv run mypy src tests
 uv run pytest
-uv run python -m build
+uv build
 ```
 
-Live DataHub context, verified Document write-back, and the Proof Pipeline interface are tracked in the public issues.
+The Proof Pipeline interface is tracked in the public issues.
 
 ## License
 

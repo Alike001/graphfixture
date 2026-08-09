@@ -3,11 +3,14 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
+from datahub.sdk.document import Document
+from datahub.sdk.lineage_client import LineageResult
 
 from graphfixture.cli import main
 from graphfixture.evidence import create_evidence, digest_payload, write_evidence
 from graphfixture.scenario import fiction_retail_context
 from graphfixture.workflow import GraphFixtureEngine
+from tests.fakes import FakeClient
 
 SQL_DIR = Path(__file__).parents[1] / "examples" / "sql"
 
@@ -79,3 +82,37 @@ def test_cli_replay_detects_recomputed_but_false_execution(
 
     assert main(["replay", str(path)]) == 2
     assert '"execution_matches": false' in capsys.readouterr().out
+
+
+def test_cli_seeds_and_runs_live_datahub_path(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from graphfixture import cli
+
+    fake = FakeClient()
+    monkeypatch.setattr(cli, "datahub_client", fake.as_datahub)
+    assert main(["datahub-seed"]) == 0
+    contract = fake.entities.store["urn:li:document:graphfixture-active-customers"]
+    assert isinstance(contract, Document)
+    assert contract.related_assets is not None
+    fake.lineage.results = [
+        LineageResult(urn, "dataset", 1, "upstream") for urn in contract.related_assets[:-1]
+    ]
+    output = tmp_path / "live.json"
+
+    code = main(
+        [
+            "datahub-run",
+            "--sql",
+            str(SQL_DIR / "customer_order_summary_fixed.sql"),
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert code == 0
+    assert output.exists()
+    captured = capsys.readouterr().out
+    assert '"writeback_verified": true' in captured

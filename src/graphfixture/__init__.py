@@ -1,5 +1,7 @@
 """GraphFixture deterministic relational verification engine."""
 
+from graphfixture.datahub_integration import DataHubContextReader
+from graphfixture.datahub_writeback import DataHubReceiptWriter
 from graphfixture.evidence import create_evidence, load_evidence, write_evidence
 from graphfixture.executor import DuckDBExecutor, UnsafeTransformationError
 from graphfixture.generator import ContextError, RelationalFixtureGenerator
@@ -10,6 +12,8 @@ from graphfixture.workflow import GraphFixtureEngine
 
 __all__ = [
     "ContextError",
+    "DataHubContextReader",
+    "DataHubReceiptWriter",
     "DuckDBExecutor",
     "GraphFixtureEngine",
     "RelationalFixtureGenerator",
