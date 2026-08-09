@@ -13,6 +13,9 @@ authors = [{ name = "Alike001" }]
 dependencies = [
   "acryl-datahub[datahub-rest]==1.7.0",
   "duckdb>=1.2,<2",
+  "fastapi>=0.116,<1",
+  "jinja2>=3.1,<4",
+  "uvicorn>=0.35,<1",
 ]
 
 [project.scripts]
@@ -21,6 +24,7 @@ graphfixture = "graphfixture.cli:main"
 [dependency-groups]
 dev = [
   "build>=1.2",
+  "httpx2>=2,<3",
   "mypy>=1.15",
   "pytest>=8.3",
   "pytest-cov>=6",

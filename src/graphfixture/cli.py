@@ -40,6 +40,9 @@ def build_parser() -> argparse.ArgumentParser:
     live.add_argument("--sql", type=Path, required=True)
     live.add_argument("--output", type=Path, required=True)
     live.add_argument("--seed", type=int, default=42)
+    serve = commands.add_parser("serve", help="start the Proof Pipeline interface")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
     return parser
 
 
@@ -52,6 +55,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _replay(args.evidence)
         if args.command == "datahub-seed":
             return _datahub_seed()
+        if args.command == "serve":
+            return _serve(args.host, args.port)
         return _datahub_run(args.sql, args.output, args.seed)
     except (OSError, EvidenceFormatError, EvidenceIntegrityError, ValueError) as exc:
         print(json.dumps({"error": str(exc)}, sort_keys=True), file=sys.stderr)
@@ -75,6 +80,13 @@ def _run(sql_path: Path, output: Path, seed: int) -> int:
         )
     )
     return 0 if run.verification.passed else 1
+
+
+def _serve(host: str, port: int) -> int:
+    import uvicorn
+
+    uvicorn.run("graphfixture.web:app", host=host, port=port)
+    return 0
 
 
 def _replay(path: Path) -> int:

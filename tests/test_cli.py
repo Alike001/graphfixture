@@ -116,3 +116,13 @@ def test_cli_seeds_and_runs_live_datahub_path(
     assert output.exists()
     captured = capsys.readouterr().out
     assert '"writeback_verified": true' in captured
+
+
+def test_cli_starts_web_interface(monkeypatch: pytest.MonkeyPatch) -> None:
+    import uvicorn
+
+    called: dict[str, object] = {}
+    monkeypatch.setattr(uvicorn, "run", lambda app, **options: called.update(app=app, **options))
+
+    assert main(["serve", "--host", "0.0.0.0", "--port", "9000"]) == 0
+    assert called == {"app": "graphfixture.web:app", "host": "0.0.0.0", "port": 9000}

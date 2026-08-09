@@ -21,6 +21,14 @@ uv run graphfixture replay examples/evidence/fixed.json
 
 That command exits `0` and proves the same fixture passes after changing the inner join to a left join.
 
+For the visual Proof Pipeline:
+
+```bash
+uv run graphfixture serve
+```
+
+Open `http://127.0.0.1:8000`. The first screen is already loaded with the failing proof. Choose the fixed SQL version and rerun to see the same contract pass without changing the fixture seed.
+
 ## Run your own proof
 
 ```bash
@@ -60,7 +68,7 @@ uv run pytest
 uv build
 ```
 
-The Proof Pipeline interface is tracked in the public issues.
+The public issue history records each meaningful feature and architectural decision.
 
 ## License
 

@@ -1,0 +1,76 @@
+.pipeline {
+  padding: 28px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(110px, 1fr));
+  overflow-x: auto;
+}
+
+.stage {
+  position: relative;
+  min-height: 82px;
+  padding: 0 8px;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+}
+
+.stage::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 19px;
+  left: 0;
+  width: 50%;
+  border-top: 2px solid var(--border);
+}
+
+.stage::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 19px;
+  left: 50%;
+  width: 50%;
+  border-top: 2px solid var(--border);
+}
+.stage:first-child::before, .stage:last-child::after { display: none; }
+.stage.passed::before, .stage.passed::after { border-color: var(--pass); }
+.stage.failed::before { border-color: var(--pass); }
+
+.stage-icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 10px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font: 800 17px/1 var(--mono);
+}
+.stage.passed .stage-icon { border-color: var(--pass); background: var(--pass); color: var(--bg); }
+.stage.failed .stage-icon { border-color: var(--fail); background: var(--fail); color: var(--bg); }
+.stage.unavailable .stage-icon { border-style: dashed; }
+.stage.selected .stage-icon { box-shadow: 0 0 0 4px #6c7cff33; }
+.stage.selected .stage-label { color: var(--text); }
+.stage-label { position: relative; z-index: 1; display: block; font: 600 13px/1.3 var(--sans); }
+
+.result-banner { min-height: 56px; padding: 14px 28px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; font: 600 15px/1.4 var(--mono); }
+.result-banner.pass { color: var(--pass); }
+.result-banner.fail { color: var(--fail); }
+.result-banner::before { content: "✓"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: var(--bg); background: var(--pass); }
+.result-banner.fail::before { content: "×"; background: var(--fail); }
+
+@media (max-width: 900px) {
+  .pipeline { grid-template-columns: 1fr; padding: 18px; overflow: visible; }
+  .stage { min-height: 58px; padding: 7px 0; display: flex; align-items: center; gap: 12px; text-align: left; }
+  .stage::before, .stage::after { top: 0; left: 19px; width: 0; height: 50%; border-top: 0; border-left: 2px solid var(--border); }
+  .stage::after { top: 50%; }
+  .stage-icon { flex: 0 0 40px; margin: 0; }
+  .result-banner { padding-left: 18px; padding-right: 18px; }
+}

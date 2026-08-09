@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="GraphFixture deterministic SQL transformation proof">
+    <title>GraphFixture Proof Pipeline</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23121A2B'/%3E%3Cpath d='m25 18-14 14 14 14M39 18l14 14-14 14M37 12 27 52' fill='none' stroke='%236C7CFF' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="{{ url_for('static', path='/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/pipeline.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/evidence.css') }}">
+    <script id="initial-proof" type="application/json">{{ initial | tojson }}</script>
+    <script type="module" src="{{ url_for('static', path='/app.js') }}" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="GraphFixture home">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span>GraphFixture</span>
+      </a>
+      <div class="topbar-actions">
+        <span class="connection" id="connection-status"></span>
+        <span class="mode-badge" id="mode-badge"></span>
+        <button class="button secondary" id="download-button" type="button">Download evidence</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="run-header" aria-labelledby="run-title">
+        <div>
+          <p class="eyebrow">Transformation proof</p>
+          <h1 id="run-title">customer_order_summary.sql</h1>
+          <dl class="run-meta">
+            <div><dt>Run</dt><dd id="run-id"></dd></div>
+            <div><dt>Seed</dt><dd id="run-seed"></dd></div>
+            <div><dt>Status</dt><dd id="run-status"></dd></div>
+          </dl>
+        </div>
+        <form class="run-controls" id="run-form">
+          <label>
+            SQL version
+            <select id="variant" name="variant">
+              <option value="broken">Inner join, broken</option>
+              <option value="fixed">Left join, fixed</option>
+            </select>
+          </label>
+          <label>
+            Context
+            <select id="source" name="source">
+              <option value="offline">Captured DataHub evidence</option>
+              <option value="live">Live DataHub</option>
+            </select>
+          </label>
+          <button class="button primary" type="submit" id="run-button">Run verification</button>
+        </form>
+      </section>
+
+      <nav class="pipeline" id="pipeline" aria-label="Verification stages"></nav>
+      <div class="result-banner" id="result-banner" role="status"></div>
+      <section id="stage-evidence" aria-live="polite"></section>
+    </main>
+
+    <footer class="receipt-bar">
+      <span class="prompt-mark" aria-hidden="true">&gt;_</span>
+      <span id="receipt-digest"></span>
+      <span class="footer-note" id="footer-note"></span>
+    </footer>
+
+    <div class="toast" id="toast" role="alert" hidden></div>
+  </body>
+</html>
