@@ -6,6 +6,17 @@ Hosted proof: https://graphfixture.onrender.com
 
 The first product slice proves one contract: every active customer must appear in `customer_order_summary`, including customers with no orders. GraphFixture generates related `customers`, `orders`, and `order_items` rows, executes the transformation in isolated DuckDB, and reports the smallest fixture that reproduces a failure. The current slice supports this fiction-retail contract and its two bundled SQL variants. It is a manually runnable proof pipeline, not an automatic pull-request check.
 
+## DataHub technologies used
+
+GraphFixture uses the open-source DataHub platform as the source of catalog context and proof memory:
+
+- **DataHub MCP Server `0.6.0`** provides the live, read-only `get_lineage` attestation used to confirm that the context matches the datasets needed by the proof.
+- **DataHub Python SDK (`acryl-datahub`)** reads dataset schemas and contract metadata, and writes the verification receipt.
+- **DataHub context graph** supplies the linked dataset URNs, schema fields, and lineage that drive fixture generation and verification.
+- **DataHub Documents** store the content-addressed verification receipt. GraphFixture reads the receipt back and reports write-back as verified only when its evidence digest matches exactly.
+
+The hosted demo is intentionally offline-first. The local live path enables the MCP Server and DataHub write-back against a reachable DataHub GMS instance. GraphFixture does not claim to use Agent Context Kit or DataHub Skills in this version.
+
 ## See the proof
 
 ```bash
