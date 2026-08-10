@@ -26,6 +26,16 @@
     </header>
 
     <main>
+      <section class="orientation-strip" aria-labelledby="orientation-title">
+        <div class="orientation-copy">
+          <h2 id="orientation-title">A SQL transformation can pass and still lose a customer.</h2>
+          <p>GraphFixture turns DataHub context into deterministic fixtures, runs the SQL, and writes the proof back to the catalog.</p>
+        </div>
+        <div class="orientation-path" aria-label="GraphFixture proof path">
+          <span>context</span><span class="path-arrow" aria-hidden="true">→</span><span>fixtures</span><span class="path-arrow" aria-hidden="true">→</span><span>proof</span>
+        </div>
+      </section>
+
       <section class="run-header" aria-labelledby="run-title">
         <div>
           <p class="eyebrow">Transformation proof</p>
@@ -53,16 +63,6 @@
           </label>
           <button class="button primary" type="submit" id="run-button">Run verification</button>
         </form>
-      </section>
-
-      <section class="orientation-strip" aria-labelledby="orientation-title">
-        <div class="orientation-copy">
-          <h2 id="orientation-title">Catch transformation bugs before merge.</h2>
-          <p>GraphFixture turns DataHub context into deterministic fixtures, runs the SQL, and writes the proof back to the catalog.</p>
-        </div>
-        <div class="orientation-path" aria-label="GraphFixture proof path">
-          <span>context</span><span class="path-arrow" aria-hidden="true">→</span><span>fixtures</span><span class="path-arrow" aria-hidden="true">→</span><span>proof</span>
-        </div>
       </section>
 
       <nav class="pipeline" id="pipeline" aria-label="Verification stages"></nav>
