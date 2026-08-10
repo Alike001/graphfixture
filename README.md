@@ -74,7 +74,25 @@ DATAHUB_GMS_URL=http://localhost:8080 uv run graphfixture datahub-run \
   --output live-evidence.json
 ```
 
-GraphFixture writes a linked verification receipt back to DataHub and immediately reads it again. The command only reports `writeback_verified: true` when the stored evidence digest matches exactly. The seed and receipt IDs are stable, so rerunning either command updates the same graph entities instead of creating duplicates.
+The live proof starts the official DataHub MCP Server with `uvx
+mcp-server-datahub@latest` and calls its read-only `get_lineage` tool before the
+typed SDK read. Set `DATAHUB_GMS_TOKEN` too when your DataHub requires
+authentication. This MCP attestation is a hard gate, so an SDK-only or
+unreachable proof cannot claim a live result. GraphFixture then writes a linked
+verification receipt back to DataHub and immediately reads it again. The
+command only reports `writeback_verified: true` when the stored evidence digest
+matches exactly. The seed and receipt IDs are stable, so rerunning either
+command updates the same graph entities instead of creating duplicates.
+
+The MCP command can be replaced for a pinned local install or a test harness:
+
+```bash
+GRAPHFIXTURE_MCP_COMMAND="uvx mcp-server-datahub@latest" \
+DATAHUB_GMS_URL=http://localhost:8080 \
+uv run graphfixture datahub-run \
+  --sql examples/sql/customer_order_summary_fixed.sql \
+  --output live-evidence.json
+```
 
 ## Quality gates
 

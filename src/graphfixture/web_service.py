@@ -9,6 +9,7 @@ from typing import Literal
 from graphfixture.datahub_integration import DataHubContextReader, datahub_client
 from graphfixture.datahub_writeback import DataHubReceiptWriter, WritebackResult
 from graphfixture.evidence import EvidenceBundle, create_evidence
+from graphfixture.mcp_integration import DataHubMcpClient
 from graphfixture.models import CoreRun
 from graphfixture.scenario import fiction_retail_context
 from graphfixture.workflow import GraphFixtureEngine
@@ -19,6 +20,12 @@ type ContextSource = Literal["offline", "live"]
 
 class LiveDataHubError(RuntimeError):
     """Raised when a requested live proof cannot reach or use DataHub."""
+
+
+def datahub_mcp_client() -> DataHubMcpClient:
+    """Build the qualifying official MCP Server client for a live proof."""
+
+    return DataHubMcpClient()
 
 
 @dataclass(frozen=True)
@@ -44,7 +51,9 @@ class ProofService:
             try:
                 client = datahub_client()
                 client.test_connection()
-                context = DataHubContextReader(client).read("graphfixture-active-customers")
+                context = DataHubContextReader(client, datahub_mcp_client()).read(
+                    "graphfixture-active-customers"
+                )
             except Exception as exc:
                 raise LiveDataHubError(f"live DataHub context failed: {exc}") from exc
         else:

@@ -8,6 +8,7 @@ from datahub.sdk.lineage_client import LineageResult
 
 from graphfixture.cli import main
 from graphfixture.evidence import create_evidence, digest_payload, write_evidence
+from graphfixture.mcp_integration import DataHubMcpClient, McpLineageAttestation
 from graphfixture.scenario import fiction_retail_context
 from graphfixture.workflow import GraphFixtureEngine
 from tests.fakes import FakeClient
@@ -91,8 +92,18 @@ def test_cli_seeds_and_runs_live_datahub_path(
 ) -> None:
     from graphfixture import cli
 
+    class FakeMcp(DataHubMcpClient):
+        def __init__(self) -> None:
+            pass
+
+        def attest_lineage(
+            self, target_urn: str, source_urns: tuple[str, ...]
+        ) -> McpLineageAttestation:
+            return McpLineageAttestation("get_lineage", source_urns, "test-digest")
+
     fake = FakeClient()
     monkeypatch.setattr(cli, "datahub_client", fake.as_datahub)
+    monkeypatch.setattr(cli, "DataHubMcpClient", FakeMcp)
     assert main(["datahub-seed"]) == 0
     contract = fake.entities.store["urn:li:document:graphfixture-active-customers"]
     assert isinstance(contract, Document)

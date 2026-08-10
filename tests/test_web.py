@@ -6,6 +6,7 @@ from datahub.sdk.lineage_client import LineageResult
 from httpx2 import ASGITransport, AsyncClient
 
 from graphfixture.datahub_demo import seed_demo_catalog
+from graphfixture.mcp_integration import DataHubMcpClient, McpLineageAttestation
 from graphfixture.web import create_app
 from graphfixture.web_service import (
     ContextSource,
@@ -94,11 +95,22 @@ async def test_live_api_uses_datahub_context_and_verifies_writeback(
     ]
     monkeypatch.setattr(web_service, "datahub_client", fake.as_datahub)
 
+    class FakeMcp(DataHubMcpClient):
+        def __init__(self) -> None:
+            pass
+
+        def attest_lineage(
+            self, target_urn: str, source_urns: tuple[str, ...]
+        ) -> McpLineageAttestation:
+            return McpLineageAttestation("get_lineage", source_urns, "test-digest")
+
+    monkeypatch.setattr(web_service, "datahub_mcp_client", FakeMcp)
+
     async with _client() as client:
         response = await client.post("/api/run", json={"variant": "fixed", "source": "live"})
 
     assert response.status_code == 200
-    assert response.json()["source_mode"] == "datahub-live"
+    assert response.json()["source_mode"] == "datahub-live+mcp"
     assert response.json()["writeback"]["verified"] is True
     assert response.json()["stages"][-1]["status"] == "passed"
 

@@ -21,6 +21,7 @@ from graphfixture.evidence import (
     load_evidence,
     write_evidence,
 )
+from graphfixture.mcp_integration import DataHubMcpClient
 from graphfixture.replay import replay_evidence
 from graphfixture.scenario import fiction_retail_context
 from graphfixture.workflow import GraphFixtureEngine
@@ -116,7 +117,9 @@ def _datahub_seed() -> int:
 
 def _datahub_run(sql_path: Path, output: Path, seed: int) -> int:
     client = datahub_client()
-    context = DataHubContextReader(client).read("graphfixture-active-customers")
+    context = DataHubContextReader(client, DataHubMcpClient()).read(
+        "graphfixture-active-customers"
+    )
     sql = sql_path.read_text(encoding="utf-8")
     run = GraphFixtureEngine().run(sql, context, seed=seed)
     bundle = create_evidence(run, sql)

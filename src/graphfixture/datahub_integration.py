@@ -8,6 +8,7 @@ from datahub.sdk.dataset import Dataset, SchemaField
 from datahub.sdk.document import Document
 from datahub.sdk.main_client import DataHubClient
 
+from graphfixture.mcp_integration import DataHubMcpClient
 from graphfixture.models import (
     ColumnSpec,
     ContextSnapshot,
@@ -24,8 +25,9 @@ class DataHubContextError(RuntimeError):
 class DataHubContextReader:
     """Build GraphFixture context from a DataHub contract Document and graph."""
 
-    def __init__(self, client: DataHubClient) -> None:
+    def __init__(self, client: DataHubClient, mcp_client: DataHubMcpClient | None = None) -> None:
         self.client = client
+        self.mcp_client = mcp_client
 
     def read(self, contract_document_id: str) -> ContextSnapshot:
         contract_doc = self.client.entities.get(DocumentUrn(contract_document_id))
@@ -40,6 +42,12 @@ class DataHubContextReader:
         )
         if not source_urns:
             raise DataHubContextError("DataHub contract has no related source datasets")
+
+        if self.mcp_client is not None:
+            try:
+                self.mcp_client.attest_lineage(target_urn, source_urns)
+            except Exception as exc:
+                raise DataHubContextError(f"DataHub MCP lineage attestation failed: {exc}") from exc
 
         tables = tuple(self._read_table(urn) for urn in source_urns)
         upstreams = {
@@ -57,7 +65,7 @@ class DataHubContextReader:
             )
         return ContextSnapshot(
             captured_at=_property(properties, "context_captured_at"),
-            source_mode="datahub-live",
+            source_mode="datahub-live+mcp" if self.mcp_client is not None else "datahub-live",
             tables=tables,
             lineage=tuple(LineageEdge(urn, target_urn) for urn in source_urns),
             contract=ContractSpec(
