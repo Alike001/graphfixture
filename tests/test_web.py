@@ -61,6 +61,7 @@ async def test_offline_api_runs_broken_and_fixed_proofs_deterministically() -> N
     assert fixed.json()["passed"] is True
     assert fixed.json()["digest"] == repeated.json()["digest"]
     assert fixed.json()["stages"][-1]["status"] == "unavailable"
+    assert fixed.json()["evidence"]["payload"]["stages"]["datahub_writeback"] == "unavailable"
 
 
 @pytest.mark.parametrize(
@@ -114,6 +115,7 @@ async def test_live_api_uses_datahub_context_and_verifies_writeback(
     assert response.json()["source_mode"] == "datahub-live+mcp"
     assert response.json()["writeback"]["verified"] is True
     assert response.json()["stages"][-1]["status"] == "passed"
+    assert response.json()["evidence"]["payload"]["stages"]["datahub_writeback"] == "passed"
 
 
 @pytest.mark.anyio
@@ -147,3 +149,13 @@ async def test_public_app_disables_live_runs_by_default() -> None:
 
     assert response.status_code == 503
     assert response.json()["detail"] == "live DataHub runs are disabled on this public deployment"
+
+
+@pytest.mark.anyio
+async def test_public_page_labels_live_mode_as_protected_only() -> None:
+    async with _client() as client:
+        response = await client.get("/")
+
+    assert response.status_code == 200
+    assert 'value="live" disabled' in response.text
+    assert "local/protected only" in response.text

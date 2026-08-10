@@ -13,7 +13,10 @@ from graphfixture.datahub_integration import (
     DataHubContextReader,
     datahub_client,
 )
-from graphfixture.datahub_writeback import DataHubReceiptWriter
+from graphfixture.datahub_writeback import (
+    finalize_datahub_writeback,
+    mark_writeback_unavailable,
+)
 from graphfixture.evidence import (
     EvidenceFormatError,
     EvidenceIntegrityError,
@@ -67,6 +70,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 def _run(sql_path: Path, output: Path, seed: int) -> int:
     sql = sql_path.read_text(encoding="utf-8")
     run = GraphFixtureEngine().run(sql, fiction_retail_context(), seed=seed)
+    run = mark_writeback_unavailable(run)
     bundle = create_evidence(run, sql)
     write_evidence(output, bundle)
     print(
@@ -120,9 +124,8 @@ def _datahub_run(sql_path: Path, output: Path, seed: int) -> int:
     context = DataHubContextReader(client, DataHubMcpClient()).read("graphfixture-active-customers")
     sql = sql_path.read_text(encoding="utf-8")
     run = GraphFixtureEngine().run(sql, context, seed=seed)
-    bundle = create_evidence(run, sql)
+    run, bundle, writeback = finalize_datahub_writeback(client, run, sql)
     write_evidence(output, bundle)
-    writeback = DataHubReceiptWriter(client).write_and_verify(run, bundle)
     print(
         json.dumps(
             {

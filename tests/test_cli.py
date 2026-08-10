@@ -35,6 +35,8 @@ def test_cli_runs_and_replays_passing_evidence(
     assert replay_code == 0
     assert output.exists()
     assert '"reproduced_verdict": true' in capsys.readouterr().out
+    evidence = json.loads(output.read_text(encoding="utf-8"))
+    assert evidence["payload"]["stages"]["datahub_writeback"] == "unavailable"
 
 
 def test_cli_returns_failure_for_reproduced_bug(tmp_path: Path) -> None:
@@ -127,6 +129,8 @@ def test_cli_seeds_and_runs_live_datahub_path(
     assert output.exists()
     captured = capsys.readouterr().out
     assert '"writeback_verified": true' in captured
+    evidence = json.loads(output.read_text(encoding="utf-8"))
+    assert evidence["payload"]["stages"]["datahub_writeback"] == "passed"
 
 
 def test_cli_starts_web_interface(monkeypatch: pytest.MonkeyPatch) -> None:

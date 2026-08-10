@@ -50,7 +50,7 @@ def create_app(
         return templates.TemplateResponse(
             request=request,
             name="index.html",
-            context={"initial": initial},
+            context={"initial": initial, "live_enabled": live_enabled},
         )
 
     @app.post("/api/run")

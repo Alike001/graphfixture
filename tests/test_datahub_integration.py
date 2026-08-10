@@ -16,6 +16,7 @@ from graphfixture.datahub_integration import (
 from graphfixture.datahub_writeback import (
     DataHubReceiptWriter,
     WritebackVerificationError,
+    finalize_datahub_writeback,
 )
 from graphfixture.evidence import EvidenceBundle, create_evidence
 from graphfixture.models import CoreRun
@@ -134,6 +135,23 @@ def test_receipt_requires_exact_readback(corruption: str) -> None:
 
     with pytest.raises(WritebackVerificationError):
         DataHubReceiptWriter(fake.as_datahub()).write_and_verify(run, bundle)
+
+
+def test_finalized_writeback_evidence_matches_receipt_state() -> None:
+    fake = FakeClient()
+    sql = (SQL_DIR / "customer_order_summary_fixed.sql").read_text(encoding="utf-8")
+    run = GraphFixtureEngine().run(sql, fiction_retail_context(), seed=42)
+
+    finalized, bundle, writeback = finalize_datahub_writeback(fake.as_datahub(), run, sql)
+
+    assert writeback.verified is True
+    assert finalized.stages["datahub_writeback"].value == "passed"
+    stages = bundle.payload["stages"]
+    assert isinstance(stages, dict)
+    assert stages["datahub_writeback"] == "passed"
+    receipt = fake.entities.store[writeback.document_urn]
+    assert isinstance(receipt, Document)
+    assert bundle.digest in (receipt.text or "")
 
 
 def test_client_factory_uses_datahub_environment(monkeypatch: pytest.MonkeyPatch) -> None:

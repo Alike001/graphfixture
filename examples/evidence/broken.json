@@ -1,6 +1,6 @@
 {
   "algorithm": "sha256",
-  "digest": "46a4b61097d48f89f592d45f38557bba225c418f31d38048ba17b598a35e9634",
+  "digest": "4e1938f78eaf29351a2c498a077669d7bf805971792e520d81667810758567e6",
   "payload": {
     "context": {
       "captured_at": "2026-08-08T12:00:00Z",
@@ -212,7 +212,7 @@
     "stages": {
       "constraints": "passed",
       "datahub_context": "passed",
-      "datahub_writeback": "pending",
+      "datahub_writeback": "unavailable",
       "duckdb": "passed",
       "fixtures": "passed",
       "verification": "failed"

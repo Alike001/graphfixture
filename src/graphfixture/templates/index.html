@@ -58,7 +58,7 @@
             Context
             <select id="source" name="source">
               <option value="offline">Offline synthetic replay</option>
-              <option value="live">Live DataHub</option>
+              <option value="live" {% if not live_enabled %}disabled{% endif %}>Live DataHub{% if not live_enabled %} (local/protected only){% endif %}</option>
             </select>
           </label>
           <button class="button primary" type="submit" id="run-button">Run verification</button>

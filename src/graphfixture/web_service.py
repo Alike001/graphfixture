@@ -7,7 +7,11 @@ from pathlib import Path
 from typing import Literal
 
 from graphfixture.datahub_integration import DataHubContextReader, datahub_client
-from graphfixture.datahub_writeback import DataHubReceiptWriter, WritebackResult
+from graphfixture.datahub_writeback import (
+    WritebackResult,
+    finalize_datahub_writeback,
+    mark_writeback_unavailable,
+)
 from graphfixture.evidence import EvidenceBundle, create_evidence
 from graphfixture.mcp_integration import DataHubMcpClient
 from graphfixture.models import CoreRun
@@ -60,12 +64,14 @@ class ProofService:
             client = None
             context = fiction_retail_context()
         run = GraphFixtureEngine().run(sql, context, seed=seed)
-        bundle = create_evidence(run, sql)
         if client is not None:
             try:
-                writeback = DataHubReceiptWriter(client).write_and_verify(run, bundle)
+                run, bundle, writeback = finalize_datahub_writeback(client, run, sql)
             except Exception as exc:
                 raise LiveDataHubError(f"DataHub write-back failed: {exc}") from exc
+        else:
+            run = mark_writeback_unavailable(run)
+            bundle = create_evidence(run, sql)
         return ProofOutcome(run, bundle, variant, source, writeback)
 
     def _sql(self, variant: SqlVariant) -> str:

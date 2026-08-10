@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from datahub.errors import ItemNotFoundError
 from datahub.metadata.urns import DocumentUrn
 from datahub.sdk.document import Document
 from datahub.sdk.main_client import DataHubClient
 
-from graphfixture.evidence import EvidenceBundle
-from graphfixture.models import CoreRun
+from graphfixture.evidence import EvidenceBundle, create_evidence
+from graphfixture.models import CoreRun, StageStatus
 
 
 class WritebackVerificationError(RuntimeError):
@@ -83,6 +83,39 @@ class DataHubReceiptWriter:
         existing.set_subtype("GraphFixture Verification Receipt")
         existing.set_custom_properties(properties)
         return existing
+
+
+def finalize_datahub_writeback(
+    client: DataHubClient,
+    run: CoreRun,
+    sql: str,
+) -> tuple[CoreRun, EvidenceBundle, WritebackResult]:
+    """Write a provisional receipt, then publish one final verified bundle.
+
+    The first write makes an interrupted workflow visible as pending. The second
+    write updates the same deterministic Document after the stage is finalized.
+    Callers must only expose the returned bundle after this function succeeds.
+    """
+
+    writer = DataHubReceiptWriter(client)
+    provisional = create_evidence(run, sql)
+    writer.write_and_verify(run, provisional)
+    finalized = replace(
+        run,
+        stages={**run.stages, "datahub_writeback": StageStatus.PASSED},
+    )
+    bundle = create_evidence(finalized, sql)
+    writeback = writer.write_and_verify(finalized, bundle)
+    return finalized, bundle, writeback
+
+
+def mark_writeback_unavailable(run: CoreRun) -> CoreRun:
+    """Finalize an offline run without claiming a catalog write occurred."""
+
+    return replace(
+        run,
+        stages={**run.stages, "datahub_writeback": StageStatus.UNAVAILABLE},
+    )
 
 
 def _receipt_properties(run: CoreRun, bundle: EvidenceBundle) -> dict[str, str]:
