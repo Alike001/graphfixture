@@ -39,6 +39,15 @@ async def test_default_page_opens_on_real_seeded_failure() -> None:
 
 
 @pytest.mark.anyio
+async def test_health_endpoint_is_dependency_free() -> None:
+    async with _client() as client:
+        response = await client.get("/healthz")
+
+    assert response.status_code == 200
+    assert response.json() == {"service": "graphfixture", "status": "ok"}
+
+
+@pytest.mark.anyio
 async def test_offline_api_runs_broken_and_fixed_proofs_deterministically() -> None:
     async with _client() as client:
         broken = await client.post("/api/run", json={"variant": "broken", "source": "offline"})

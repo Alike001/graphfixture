@@ -29,6 +29,24 @@ uv run graphfixture serve
 
 Open `http://127.0.0.1:8000`. The first screen is already loaded with the failing proof. Choose the fixed SQL version and rerun to see the same contract pass without changing the fixture seed.
 
+## Deploy the hosted proof
+
+GraphFixture can run as an offline-first Render web service. The hosted screen
+opens on the captured proof and needs no DataHub server, API key, or network
+call for the main demo.
+
+1. Create a new Render Blueprint from this repository and select `render.yaml`.
+2. Wait for the health check at `/healthz` to pass.
+3. Open the generated URL, run the broken proof, then choose the fixed SQL and
+   rerun it.
+
+The Live DataHub selector is optional. It only works when `DATAHUB_GMS_URL`
+points to a reachable DataHub GMS service and its authentication is configured
+through the deployment environment. A local `http://localhost:8080` endpoint
+cannot be reached from the hosted service. If no live endpoint is configured,
+the app keeps the captured-evidence path visible and does not claim a live
+write-back.
+
 ## Run your own proof
 
 ```bash

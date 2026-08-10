@@ -29,6 +29,10 @@ def create_app(service: ProofService | None = None) -> FastAPI:
     app = FastAPI(title="GraphFixture", version="0.1.0")
     app.mount("/static", StaticFiles(directory=PACKAGE_DIR / "static"), name="static")
 
+    @app.get("/healthz")
+    async def healthz() -> dict[str, str]:
+        return {"service": "graphfixture", "status": "ok"}
+
     @app.get("/", response_class=HTMLResponse)
     async def index(request: Request) -> HTMLResponse:
         outcome = proof_service.execute("broken", "offline")
