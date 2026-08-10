@@ -58,6 +58,7 @@ class ContextSnapshot:
     tables: tuple[TableSpec, ...]
     lineage: tuple[LineageEdge, ...]
     contract: ContractSpec
+    mcp_response_digest: str | None = None
 
     def table(self, name: str) -> TableSpec:
         for table in self.tables:
@@ -97,6 +98,7 @@ class VerificationResult:
     unexpected_ids: tuple[str, ...]
     duplicate_ids: tuple[str, ...]
     reproducer: dict[str, tuple[Row, ...]]
+    error: str | None = None
 
 
 @dataclass(frozen=True)

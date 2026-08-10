@@ -78,6 +78,15 @@ def test_mcp_lineage_attestation_rejects_missing_source() -> None:
         client.attest_lineage(TARGET, (SOURCE,))
 
 
+def test_mcp_lineage_does_not_accept_urns_hidden_in_unrelated_text() -> None:
+    client, _ = _client(
+        {"content": [{"type": "text", "text": f"unrelated text mentions {SOURCE}"}]}
+    )
+
+    with pytest.raises(DataHubMcpError, match="missing sources"):
+        client.attest_lineage(TARGET, (SOURCE,))
+
+
 def test_mcp_lineage_attestation_surfaces_tool_error() -> None:
     client, process = _client({"content": []})
 

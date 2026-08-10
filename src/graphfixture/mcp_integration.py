@@ -40,9 +40,7 @@ class DataHubMcpClient:
     ) -> None:
         configured = os.getenv("GRAPHFIXTURE_MCP_COMMAND")
         self.command = command or tuple(
-            shlex.split(configured)
-            if configured
-            else ("uvx", "mcp-server-datahub@latest")
+            shlex.split(configured) if configured else ("uvx", "mcp-server-datahub==0.6.0")
         )
         self.timeout_seconds = timeout_seconds or float(
             os.getenv("GRAPHFIXTURE_MCP_TIMEOUT_SECONDS", "30")
@@ -84,11 +82,10 @@ class DataHubMcpClient:
             raise DataHubMcpError(f"MCP get_lineage failed: {response}")
         payload = _tool_payload(response)
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-        missing = tuple(urn for urn in source_urns if urn not in encoded)
+        returned_urns = _entity_urns(payload)
+        missing = tuple(urn for urn in source_urns if urn not in returned_urns)
         if missing:
-            raise DataHubMcpError(
-                "MCP lineage is missing sources: " + ", ".join(missing)
-            )
+            raise DataHubMcpError("MCP lineage is missing sources: " + ", ".join(missing))
         digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
         return McpLineageAttestation("get_lineage", source_urns, digest)
 
@@ -121,9 +118,21 @@ class DataHubMcpClient:
 
 class _McpServerProcess:
     def __init__(self, command: tuple[str, ...], timeout_seconds: float) -> None:
-        env = os.environ.copy()
-        env.setdefault("TOOLS_IS_MUTATION_ENABLED", "false")
-        env.setdefault("TOOLS_IS_USER_ENABLED", "false")
+        env = {
+            key: value
+            for key, value in os.environ.items()
+            if key
+            in {
+                "PATH",
+                "HOME",
+                "XDG_CACHE_HOME",
+                "DATAHUB_GMS_URL",
+                "DATAHUB_GMS_TOKEN",
+                "DATAHUB_MCP_SERVER_URL",
+            }
+        }
+        env["TOOLS_IS_MUTATION_ENABLED"] = "false"
+        env["TOOLS_IS_USER_ENABLED"] = "false"
         try:
             self.process: subprocess.Popen[bytes] = subprocess.Popen(
                 command,
@@ -212,3 +221,19 @@ def _tool_payload(response: dict[str, Any]) -> Any:
     if not parsed:
         raise DataHubMcpError("MCP tool response has no readable content")
     return parsed[0] if len(parsed) == 1 else parsed
+
+
+def _entity_urns(value: Any) -> frozenset[str]:
+    """Collect exact entity URNs from structured MCP response objects."""
+
+    found: set[str] = set()
+    if isinstance(value, dict):
+        urn = value.get("urn")
+        if isinstance(urn, str) and urn.startswith("urn:li:"):
+            found.add(urn)
+        for item in value.values():
+            found.update(_entity_urns(item))
+    elif isinstance(value, list):
+        for item in value:
+            found.update(_entity_urns(item))
+    return frozenset(found)

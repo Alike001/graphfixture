@@ -27,12 +27,18 @@ def proof_view(outcome: ProofOutcome) -> dict[str, object]:
     missing = len(verification.missing_ids)
     if verification.passed:
         summary = f"Contract passed: all {len(verification.expected_ids)} active customers appear"
+    elif verification.error:
+        summary = f"Contract failed: {verification.error}"
     else:
         noun = "customer" if missing == 1 else "customers"
         summary = f"1 contract failed: {missing} active {noun} missing from the output"
     expected_rows = []
     customers = run.fixtures.rows("customers")
-    actual_by_id = {str(row[run.context.contract.key_field]): row for row in run.execution.rows}
+    actual_by_id = {
+        str(row[run.context.contract.key_field]): row
+        for row in run.execution.rows
+        if run.context.contract.key_field in row
+    }
     for customer_id in verification.expected_ids:
         customer = next(
             row for row in customers if str(row[run.context.contract.key_field]) == customer_id
@@ -70,6 +76,7 @@ def proof_view(outcome: ProofOutcome) -> dict[str, object]:
         "execution": to_json_value(run.execution),
         "expected_rows": to_json_value(expected_rows),
         "missing_ids": list(verification.missing_ids),
+        "verification_error": verification.error,
         "sql": outcome.bundle.payload["sql"],
         "digest": outcome.bundle.digest,
         "writeback": writeback,

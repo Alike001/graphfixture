@@ -71,3 +71,20 @@ def test_single_select_executes_and_returns_typed_rows() -> None:
     assert result.columns == ("customer_id", "name", "order_count")
     assert len(result.rows) == 3
     assert len(result.sql_digest) == 64
+
+
+def test_nullable_datahub_columns_are_loaded_as_null_when_fixture_lacks_them() -> None:
+    context = fiction_retail_context()
+    customers = context.table("customers")
+    extended = replace(
+        customers,
+        columns=(*customers.columns, ColumnSpec("email", "string", nullable=True)),
+    )
+    extended_context = replace(context, tables=(extended, *context.tables[1:]))
+    fixtures = RelationalFixtureGenerator().generate(context, 42)
+
+    result = DuckDBExecutor().run(
+        "SELECT customer_id, email FROM customers", extended_context, fixtures
+    )
+
+    assert result.rows[0]["email"] is None

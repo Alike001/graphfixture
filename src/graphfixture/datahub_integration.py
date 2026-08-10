@@ -43,9 +43,12 @@ class DataHubContextReader:
         if not source_urns:
             raise DataHubContextError("DataHub contract has no related source datasets")
 
+        mcp_response_digest = None
         if self.mcp_client is not None:
             try:
-                self.mcp_client.attest_lineage(target_urn, source_urns)
+                mcp_response_digest = self.mcp_client.attest_lineage(
+                    target_urn, source_urns
+                ).response_digest
             except Exception as exc:
                 raise DataHubContextError(f"DataHub MCP lineage attestation failed: {exc}") from exc
 
@@ -77,6 +80,7 @@ class DataHubContextReader:
                 status_field=_property(properties, "status_field"),
                 active_value=_property(properties, "active_value"),
             ),
+            mcp_response_digest=mcp_response_digest,
         )
 
     def _read_table(self, urn: str) -> TableSpec:

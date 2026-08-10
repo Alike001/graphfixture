@@ -44,23 +44,24 @@ class DataHubReceiptWriter:
         if not isinstance(readback, Document):
             raise WritebackVerificationError("DataHub receipt read-back is not a Document")
         properties = readback.custom_properties or {}
-        if properties.get("evidence_digest") != bundle.digest:
-            raise WritebackVerificationError("DataHub receipt digest did not match read-back")
+        expected_properties = _receipt_properties(run, bundle)
+        if any(properties.get(key) != value for key, value in expected_properties.items()):
+            raise WritebackVerificationError("DataHub receipt properties did not match read-back")
         if not readback.text or bundle.digest not in readback.text:
             raise WritebackVerificationError("DataHub receipt text did not match read-back")
+        if readback.title != f"GraphFixture receipt: {run.verification.title}":
+            raise WritebackVerificationError("DataHub receipt title did not match read-back")
+        if readback.subtype != "GraphFixture Verification Receipt":
+            raise WritebackVerificationError("DataHub receipt subtype did not match read-back")
+        if list(readback.related_assets or []) != [table.urn for table in run.context.tables]:
+            raise WritebackVerificationError("DataHub receipt assets did not match read-back")
         return WritebackResult(str(readback.urn), bundle.digest, verified=True)
 
     def _document(self, document_id: str, run: CoreRun, bundle: EvidenceBundle) -> Document:
         title = f"GraphFixture receipt: {run.verification.title}"
         text = _receipt_text(run, bundle)
         assets = [table.urn for table in run.context.tables]
-        properties = {
-            "evidence_digest": bundle.digest,
-            "contract_id": run.verification.contract_id,
-            "verdict": "passed" if run.verification.passed else "failed",
-            "fixture_seed": str(run.fixtures.seed),
-            "sql_digest": run.execution.sql_digest,
-        }
+        properties = _receipt_properties(run, bundle)
         try:
             existing = self.client.entities.get(DocumentUrn(document_id))
         except ItemNotFoundError:
@@ -82,6 +83,17 @@ class DataHubReceiptWriter:
         existing.set_subtype("GraphFixture Verification Receipt")
         existing.set_custom_properties(properties)
         return existing
+
+
+def _receipt_properties(run: CoreRun, bundle: EvidenceBundle) -> dict[str, str]:
+    return {
+        "evidence_digest": bundle.digest,
+        "contract_id": run.verification.contract_id,
+        "verdict": "passed" if run.verification.passed else "failed",
+        "fixture_seed": str(run.fixtures.seed),
+        "sql_digest": run.execution.sql_digest,
+        "mcp_response_digest": run.context.mcp_response_digest or "none",
+    }
 
 
 def _document_id(run: CoreRun) -> str:

@@ -99,7 +99,7 @@ function overviewView(proof, selected) {
     panel.append(text("h3", "", "DuckDB output"), table(proof.execution.rows, proof.missing_ids));
   } else {
     const receipt = proof.writeback;
-    panel.append(text("div", `receipt-proof${receipt ? "" : " unavailable"}`, receipt ? "Receipt stored and read back from DataHub." : "Write-back is unavailable in captured evidence mode."));
+    panel.append(text("div", `receipt-proof${receipt ? "" : " unavailable"}`, receipt ? "Receipt stored and read back from DataHub." : "Write-back is unavailable in offline synthetic replay."));
     panel.append(definitionList([
       ["Document URN", receipt?.document_urn ?? "Unavailable"],
       ["Evidence digest", receipt?.evidence_digest ?? proof.digest],

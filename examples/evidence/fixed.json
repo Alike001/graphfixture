@@ -1,6 +1,6 @@
 {
   "algorithm": "sha256",
-  "digest": "bd5505b63faac7bcd540dfb9e866899f820f704c474f92b2256384b7bbaf6867",
+  "digest": "b85a8926668297189c8d0e80b27e6265cb0518c4890a9cada168bb384be62991",
   "payload": {
     "context": {
       "captured_at": "2026-08-08T12:00:00Z",
@@ -27,7 +27,8 @@
           "upstream": "urn:li:dataset:(urn:li:dataPlatform:postgres,fiction_retail.order_items,PROD)"
         }
       ],
-      "source_mode": "captured",
+      "mcp_response_digest": null,
+      "source_mode": "offline-synthetic",
       "tables": [
         {
           "columns": [
@@ -229,6 +230,7 @@
       ],
       "contract_id": "active-customers-present",
       "duplicate_ids": [],
+      "error": null,
       "expected_ids": [
         "C-001",
         "C-003",

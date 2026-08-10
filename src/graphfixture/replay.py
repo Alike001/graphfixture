@@ -82,6 +82,7 @@ def _context(raw: dict[str, JsonValue]) -> ContextSnapshot:
             status_field=_string(contract.get("status_field"), "status_field"),
             active_value=_string(contract.get("active_value"), "active_value"),
         ),
+        mcp_response_digest=_optional_string(raw.get("mcp_response_digest")),
     )
 
 
@@ -164,4 +165,12 @@ def _string(value: JsonValue | None, field: str) -> str:
 def _boolean(value: JsonValue | None, field: str) -> bool:
     if not isinstance(value, bool):
         raise EvidenceFormatError(f"evidence {field} must be a boolean")
+    return value
+
+
+def _optional_string(value: JsonValue | None) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise EvidenceFormatError("evidence mcp_response_digest must be a string")
     return value

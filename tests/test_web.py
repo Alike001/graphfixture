@@ -106,7 +106,8 @@ async def test_live_api_uses_datahub_context_and_verifies_writeback(
 
     monkeypatch.setattr(web_service, "datahub_mcp_client", FakeMcp)
 
-    async with _client() as client:
+    app = create_app(enable_live=True)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/api/run", json={"variant": "fixed", "source": "live"})
 
     assert response.status_code == 200
@@ -128,9 +129,21 @@ async def test_live_api_reports_unavailable_datahub_without_fake_success(
         ) -> ProofOutcome:
             raise LiveDataHubError("live DataHub context failed: connection refused")
 
-    app = create_app(UnavailableService(tmp_path))
+    app = create_app(UnavailableService(tmp_path), enable_live=True)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/api/run", json={"variant": "fixed", "source": "live"})
 
     assert response.status_code == 503
-    assert "connection refused" in response.json()["detail"]
+    assert (
+        response.json()["detail"]
+        == "live DataHub proof is unavailable; use offline synthetic replay"
+    )
+
+
+@pytest.mark.anyio
+async def test_public_app_disables_live_runs_by_default() -> None:
+    async with _client() as client:
+        response = await client.post("/api/run", json={"variant": "fixed", "source": "live"})
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "live DataHub runs are disabled on this public deployment"

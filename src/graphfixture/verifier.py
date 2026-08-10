@@ -26,6 +26,26 @@ def verify_active_customers(
             if row[contract.status_field] == contract.active_value
         )
     )
+    missing_key_rows = tuple(
+        index for index, row in enumerate(execution.rows) if contract.key_field not in row
+    )
+    if missing_key_rows:
+        return VerificationResult(
+            passed=False,
+            contract_id=contract.contract_id,
+            title=contract.title,
+            source_urn=contract.source_urn,
+            expected_ids=expected,
+            actual_ids=(),
+            missing_ids=expected,
+            unexpected_ids=(),
+            duplicate_ids=(),
+            reproducer=_minimal_reproducer(fixtures, expected),
+            error=(
+                f"output is missing contract key '{contract.key_field}' "
+                f"in row(s): {', '.join(str(index) for index in missing_key_rows)}"
+            ),
+        )
     actual = tuple(sorted(str(row[contract.key_field]) for row in execution.rows))
     counts = Counter(actual)
     missing = tuple(sorted(set(expected) - set(actual)))

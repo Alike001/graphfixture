@@ -53,7 +53,7 @@ function render() {
   elements.connection.className = `connection${live ? " live" : ""}`;
   elements.connection.textContent = live ? "DataHub connected" : "DataHub offline";
   elements.mode.className = `mode-badge${live ? " live" : ""}`;
-  elements.mode.textContent = live ? "Live context" : "Captured evidence";
+  elements.mode.textContent = live ? "Live context" : "Synthetic replay";
   elements.runId.textContent = `GF-${proof.run_id}`;
   elements.seed.textContent = String(proof.seed);
   elements.status.className = `status ${proof.passed ? "pass" : "fail"}`;

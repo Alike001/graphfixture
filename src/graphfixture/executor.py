@@ -94,7 +94,16 @@ class DuckDBExecutor:
             definitions.append(f'"{name}" {data_type}{nullability}')
             column_names.append(name)
         connection.execute(f'CREATE TABLE "{table_name}" ({", ".join(definitions)})')
-        values = [tuple(row[name] for name in column_names) for row in rows]
+        values = []
+        for row in rows:
+            values.append(
+                tuple(
+                    row[name]
+                    if name in row
+                    else self._missing_column_value(table, name, column.nullable)
+                    for name, column in zip(column_names, table.columns, strict=True)
+                )
+            )
         if values:
             placeholders = ", ".join("?" for _ in column_names)
             connection.executemany(
@@ -107,3 +116,11 @@ class DuckDBExecutor:
         if not IDENTIFIER.fullmatch(value):
             raise UnsafeTransformationError(f"unsafe SQL identifier: {value}")
         return value
+
+    @staticmethod
+    def _missing_column_value(table: TableSpec, name: str, nullable: bool) -> None:
+        if nullable:
+            return None
+        raise UnsafeTransformationError(
+            f"fixture row is missing required DataHub column: {table.name}.{name}"
+        )

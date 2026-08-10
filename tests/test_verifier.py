@@ -57,3 +57,17 @@ def test_contract_fields_drive_verification() -> None:
 
     assert verification.passed is True
     assert verification.expected_ids == ("C-002",)
+
+
+def test_verifier_reports_missing_contract_key_instead_of_crashing() -> None:
+    context = fiction_retail_context()
+    fixtures = RelationalFixtureGenerator().generate(context, 42)
+
+    verification = verify_active_customers(
+        context,
+        fixtures,
+        ExecutionResult(columns=("name",), rows=({"name": "Alice"},), sql_digest="0" * 64),
+    )
+
+    assert verification.passed is False
+    assert verification.error == "output is missing contract key 'customer_id' in row(s): 0"

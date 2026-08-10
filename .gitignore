@@ -11,6 +11,7 @@ design.doc.md
 .env
 .env.*
 !.env.example
+live-evidence.json
 
 # Local dependency and build output.
 node_modules/

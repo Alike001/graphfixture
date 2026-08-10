@@ -14,7 +14,7 @@ def _dataset_urn(name: str) -> str:
 
 
 def fiction_retail_context() -> ContextSnapshot:
-    """Return a captured context with the same shape as the live DataHub adapter."""
+    """Return a clearly labeled synthetic context for offline replay."""
 
     customers = TableSpec(
         name="customers",
@@ -49,7 +49,7 @@ def fiction_retail_context() -> ContextSnapshot:
     target_urn = _dataset_urn("customer_order_summary")
     return ContextSnapshot(
         captured_at="2026-08-08T12:00:00Z",
-        source_mode="captured",
+        source_mode="offline-synthetic",
         tables=(customers, orders, order_items),
         lineage=tuple(
             LineageEdge(table.urn, target_urn) for table in (customers, orders, order_items)

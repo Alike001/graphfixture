@@ -117,9 +117,7 @@ def _datahub_seed() -> int:
 
 def _datahub_run(sql_path: Path, output: Path, seed: int) -> int:
     client = datahub_client()
-    context = DataHubContextReader(client, DataHubMcpClient()).read(
-        "graphfixture-active-customers"
-    )
+    context = DataHubContextReader(client, DataHubMcpClient()).read("graphfixture-active-customers")
     sql = sql_path.read_text(encoding="utf-8")
     run = GraphFixtureEngine().run(sql, context, seed=seed)
     bundle = create_evidence(run, sql)
